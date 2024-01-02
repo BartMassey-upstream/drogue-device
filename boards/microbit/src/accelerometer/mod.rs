@@ -27,19 +27,20 @@ pub struct Accelerometer<'d> {
 /// Backward-compatibility hack for lsm303agr accel data.
 pub struct Measurement {
     /// x-axis acceleration in milli-g
-    pub x: i32, 
+    pub x: i32,
     /// y-axis acceleration in milli-g
-    pub y: i32, 
+    pub y: i32,
     /// z-axis acceleration in milli-g
-    pub z: i32, 
+    pub z: i32,
 }
-
 
 impl<'d> Accelerometer<'d> {
     /// Create and initialize the accelerometer
     pub fn new(
         twispi0: TWISPI0,
-        irq: impl Peripheral<P = SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0> + 'd + Binding<SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0, InterruptHandler<TWISPI0>>,
+        irq: impl Peripheral<P = SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0>
+            + 'd
+            + Binding<SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0, InterruptHandler<TWISPI0>>,
         sda: P0_16,
         scl: P0_08,
     ) -> Result<Self, Error> {
@@ -64,7 +65,7 @@ impl<'d> Accelerometer<'d> {
     pub fn accel_data(&mut self) -> Result<Measurement, Error> {
         let acc = self.sensor.acceleration()?;
         let (x, y, z) = acc.xyz_mg();
-        Ok ( Measurement { x, y, z } )
+        Ok(Measurement { x, y, z })
     }
 
     /// Run a continuous task outputing accelerometer data at the configured data rate
