@@ -1,14 +1,14 @@
 //! Accelerometer for the micro:bit
-pub use lsm303agr::{AccelOutputDataRate, Measurement};
+pub use lsm303agr::AccelOutputDataRate;
 use {
     embassy_nrf::{
-        interrupt::SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0,
+        interrupt::typelevel::{Binding, SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0},
         peripherals::{P0_08, P0_16, TWISPI0},
-        twim, Peripheral,
+        twim::{self, InterruptHandler},
+        Peripheral,
     },
     embassy_sync::channel::DynamicSender,
-    embassy_time::{Duration, Ticker},
-    futures::StreamExt,
+    embassy_time::{Delay, Duration, Ticker},
     lsm303agr::{
         interface::I2cInterface, mode::MagOneShot, AccelMode, Error as LsmError, Lsm303agr, Status,
     },
@@ -24,11 +24,22 @@ pub struct Accelerometer<'d> {
     sensor: Lsm303agr<I2cInterface<I2C<'d>>, MagOneShot>,
 }
 
+/// Backward-compatibility hack for lsm303agr accel data.
+pub struct Measurement {
+    /// x-axis acceleration in milli-g
+    pub x: i32, 
+    /// y-axis acceleration in milli-g
+    pub y: i32, 
+    /// z-axis acceleration in milli-g
+    pub z: i32, 
+}
+
+
 impl<'d> Accelerometer<'d> {
     /// Create and initialize the accelerometer
     pub fn new(
         twispi0: TWISPI0,
-        irq: impl Peripheral<P = SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0> + 'd,
+        irq: impl Peripheral<P = SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0> + 'd + Binding<SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0, InterruptHandler<TWISPI0>>,
         sda: P0_16,
         scl: P0_08,
     ) -> Result<Self, Error> {
@@ -37,8 +48,7 @@ impl<'d> Accelerometer<'d> {
 
         let mut sensor = Lsm303agr::new_with_i2c(twi);
         sensor.init()?;
-        sensor.set_accel_odr(AccelOutputDataRate::Hz10)?;
-        sensor.set_accel_mode(AccelMode::Normal)?;
+        sensor.set_accel_mode_and_odr(&mut Delay, AccelMode::Normal, AccelOutputDataRate::Hz10)?;
 
         Ok(Self { sensor })
     }
@@ -52,7 +62,9 @@ impl<'d> Accelerometer<'d> {
     ///
     /// Returned in mg (milli-g) where 1g is 9.8m/s².
     pub fn accel_data(&mut self) -> Result<Measurement, Error> {
-        self.sensor.accel_data()
+        let acc = self.sensor.acceleration()?;
+        let (x, y, z) = acc.xyz_mg();
+        Ok ( Measurement { x, y, z } )
     }
 
     /// Run a continuous task outputing accelerometer data at the configured data rate

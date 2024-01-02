@@ -17,7 +17,12 @@ pub struct Microphone<'a> {
 
 impl<'a> Microphone<'a> {
     /// Create a new microphone instance
-    pub fn new(saadc: SAADC, irq: interrupt::SAADC, mic: P0_05, micen: P0_20) -> Self {
+    pub fn new(
+        saadc: SAADC,
+        irq: impl interrupt::typelevel::Binding<interrupt::typelevel::SAADC, InterruptHandler> + 'a,
+        mic: P0_05,
+        micen: P0_20,
+    ) -> Self {
         let config = Config::default();
         let mut channel_config = ChannelConfig::single_ended(mic);
         channel_config.gain = Gain::GAIN4;
