@@ -64,18 +64,18 @@ mod bitmaps {
 
 pub use bitmaps::*;
 
-impl<const XSIZE: usize, const YSIZE: usize> Into<Frame<XSIZE, YSIZE>> for u8 {
-    fn into(self) -> Frame<XSIZE, YSIZE> {
-        (self as char).into()
+impl<const XSIZE: usize, const YSIZE: usize> From<u8> for Frame<XSIZE, YSIZE> {
+    fn from(val: u8) -> Self {
+        (val as char).into()
     }
 }
 
-impl<const XSIZE: usize, const YSIZE: usize> Into<Frame<XSIZE, YSIZE>> for char {
-    fn into(self) -> Frame<XSIZE, YSIZE> {
+impl<const XSIZE: usize, const YSIZE: usize> From<char> for Frame<XSIZE, YSIZE> {
+    fn from(val: char) -> Self {
         assert!(XSIZE == 5);
         assert!(YSIZE == 5);
 
-        let n = self as usize;
+        let n = val as usize;
         if n > pendolino::PRINTABLE_START
             && n < pendolino::PRINTABLE_START + pendolino::PRINTABLE_COUNT
         {
