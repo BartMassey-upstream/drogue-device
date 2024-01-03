@@ -7,7 +7,7 @@ description = "An embassy-based boards support package (BSP) for BBC Micro:bit v
 [workspace]
 
 [dependencies]
-embassy-nrf = { git="https://github.com/embassy-rs/embassy", default-features = false, features = ["nrf52833", "nfc-pins-as-gpio", "time-driver-rtc1"] }
+embassy-nrf = { git="https://github.com/embassy-rs/embassy", default-features = false, features = ["nrf52833", "nfc-pins-as-gpio", "time-driver-rtc1", "gpiote"] }
 embassy-time = { git="https://github.com/embassy-rs/embassy", default-features = false }
 embassy-sync = { git="https://github.com/embassy-rs/embassy", default-features = false }
 cortex-m = "0.7.7"

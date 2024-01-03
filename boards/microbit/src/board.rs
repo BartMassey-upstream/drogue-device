@@ -10,7 +10,9 @@ use {
     },
 };
 
-pub use embassy_nrf::{config::Config, interrupt::Priority, wdt};
+pub use embassy_nrf::{self, config::Config, interrupt::Priority, wdt};
+pub use embassy_sync;
+pub use embassy_time;
 
 /// LED matrix peripheral for the micro:bit
 pub type LedMatrix = LedMatrixDriver<Output<'static, AnyPin>, 5, 5>;
